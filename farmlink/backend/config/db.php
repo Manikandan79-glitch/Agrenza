@@ -3,18 +3,31 @@
  * FarmLink — Database connection (mysqli)
  */
 
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');          // WAMP default = empty
-define('DB_NAME', 'farmlink');
+$dbHost = getenv('DB_HOST') ?: 'gateway01.ap-northeast-1.prod.aws.tidbcloud.com';
+$dbUser = getenv('DB_USER') ?: '8nQ2NS6oZwxnCRL.root';
+$dbPass = getenv('DB_PASS') ?: 'XboE09A6eXQKqeZw';
+$dbName = getenv('DB_NAME') ?: 'farmlink';
+$dbPort = (int)(getenv('DB_PORT') ?: 4000);
+
+define('DB_HOST', $dbHost);
+define('DB_USER', $dbUser);
+define('DB_PASS', $dbPass);
+define('DB_NAME', $dbName);
+define('DB_PORT', $dbPort);
 
 // Uploaded product images URL
-define('UPLOAD_URL', 'http://localhost/farmlink/farmlink/uploads/');
+define('UPLOAD_URL', getenv('UPLOAD_URL') ?: 'http://localhost/farmlink/farmlink/uploads/');
 define('UPLOAD_DIR', __DIR__ . '/../../uploads/');
 
-$conn = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+$conn = mysqli_init();
+if ($dbPort !== 3306 || getenv('DB_SSL') === 'true' || strpos($dbHost, 'tidbcloud.com') !== false) {
+    mysqli_ssl_set($conn, NULL, NULL, NULL, NULL, NULL);
+    $connected = mysqli_real_connect($conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT, NULL, MYSQLI_CLIENT_SSL);
+} else {
+    $connected = mysqli_real_connect($conn, DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
+}
 
-if (!$conn) {
+if (!$connected) {
     http_response_code(500);
     header('Content-Type: application/json');
     echo json_encode(['ok' => false, 'error' => 'Database connection failed: ' . mysqli_connect_error()]);

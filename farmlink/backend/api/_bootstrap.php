@@ -25,7 +25,7 @@ $origin = $_SERVER['HTTP_ORIGIN'] ?? ($_SERVER['HTTP_REFERER'] ?? '');
 if (!empty($origin) && strpos($origin, 'http') === 0) {
     $parsed = parse_url($origin);
     $originHost = ($parsed['scheme'] ?? 'http') . '://' . ($parsed['host'] ?? 'localhost') . (isset($parsed['port']) ? ':' . $parsed['port'] : '');
-    if (in_array($originHost, $allowedOrigins, true)) {
+    if (in_array($originHost, $allowedOrigins, true) || preg_match('/^https:\/\/[a-zA-Z0-9\-_.]*\.vercel\.app$/', $originHost)) {
         header("Access-Control-Allow-Origin: $originHost");
     } else {
         header("Access-Control-Allow-Origin: http://localhost:3000");
