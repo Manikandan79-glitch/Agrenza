@@ -6,15 +6,15 @@ import AdminNav from "@/app/components/AdminNav";
 import { getMe, adminListFarmers, adminFarmerAction, ApiError, AdminFarmer, FarmerStatus } from "@/app/lib/api";
 
 const TABS: { key: FarmerStatus; label: string }[] = [
-  { key: "pending", label: "Pending Approval" },
-  { key: "approved", label: "Approved" },
-  { key: "rejected", label: "Rejected" },
   { key: "all", label: "All Farmers" },
+  { key: "approved", label: "Approved" },
+  { key: "pending", label: "Pending Approval" },
+  { key: "rejected", label: "Rejected" },
 ];
 
 export default function AdminFarmersPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<FarmerStatus>("pending");
+  const [tab, setTab] = useState<FarmerStatus>("all");
   const [farmers, setFarmers] = useState<AdminFarmer[]>([]);
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(true);

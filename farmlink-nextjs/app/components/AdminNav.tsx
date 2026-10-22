@@ -7,6 +7,7 @@ import { logoutUser } from "@/app/lib/api";
 const TABS = [
   { href: "/admin/dashboard", label: "Dashboard" },
   { href: "/admin/farmers", label: "Farmers" },
+  { href: "/admin/buyers", label: "Buyers" },
   { href: "/admin/products", label: "Products" },
   { href: "/admin/bulk-requests", label: "Bulk Requests" },
   { href: "/admin/orders", label: "Orders & Income" },

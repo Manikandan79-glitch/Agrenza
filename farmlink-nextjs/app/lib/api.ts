@@ -198,6 +198,17 @@ export type AdminFarmer = {
   total_sales?: number;
 };
 
+export type AdminBuyer = {
+  id: number;
+  name: string;
+  mobile: string;
+  email: string | null;
+  status: string;
+  joined: string;
+  total_orders: number;
+  total_spent: number;
+};
+
 export type Product = {
   id: number;
   name: string;
@@ -409,6 +420,10 @@ export function adminStats(from?: string, to?: string) {
 
 export function adminListFarmers(status: FarmerStatus = "pending") {
   return getRequest<{ farmers: AdminFarmer[] }>("/admin/farmers.php", { status });
+}
+
+export function adminListBuyers() {
+  return getRequest<{ buyers: AdminBuyer[] }>("/admin/buyers.php");
 }
 
 export function adminFarmerAction(id: number, action: "approve" | "reject", remark?: string) {
