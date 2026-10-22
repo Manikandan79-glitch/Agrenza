@@ -64,11 +64,12 @@ function BulkRequestForm() {
           category: p.category,
           price: p.price,
           stock: p.stock,
+          image: null,
           description: p.description,
           icon: p.icon,
           farmer: p.farmer,
           location: p.location,
-          status: "active",
+          status: "active" as const,
         }));
       }
 
