@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /shop
+Allow: /shop/
+Allow: /offers
+Allow: /about
+Allow: /contact
+Allow: /privacy-policy
+Allow: /terms
+
+Disallow: /admin/
+Disallow: /buyer/
+Disallow: /farmer/
+Disallow: /auth/
+Disallow: /api/
+
+Sitemap: https://agrenza.com/sitemap.xml

@@ -1,0 +1,20 @@
+# FarmLink - Root .htaccess
+
+# Prevent directory listing
+Options -Indexes
+
+# Protect sensitive folders from direct browsing of PHP-less assets
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+</IfModule>
+
+# Deny access to .sql and .env files if ever placed here
+<FilesMatch "\.(sql|env|log)$">
+    Require all denied
+</FilesMatch>
+
+# Default charset
+AddDefaultCharset UTF-8
+
+# Custom error pages (optional - create these if desired)
+# ErrorDocument 404 /farmlink/index.php

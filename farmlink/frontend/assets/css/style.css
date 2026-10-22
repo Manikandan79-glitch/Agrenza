@@ -1,0 +1,151 @@
+:root {
+    --farm-green: #2e7d32;
+    --farm-green-dark: #1b5e20;
+    --farm-gold: #f9a825;
+    --farm-cream: #f8f6f0;
+}
+
+body {
+    background-color: var(--farm-cream);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.farmlink-navbar {
+    background: linear-gradient(90deg, var(--farm-green-dark), var(--farm-green));
+}
+
+.farmlink-footer {
+    background: var(--farm-green-dark);
+}
+
+.footer-link {
+    color: #dcedc8;
+    text-decoration: none;
+}
+.footer-link:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+/* Hero */
+/* Hero */
+.hero-section {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    text-align: center;
+    overflow: hidden;
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.hero-video-bg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    object-fit: cover;
+}
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(27, 94, 32, 0.72);
+    z-index: 1;
+}
+.hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 90px 0;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.15);  /* very light dark tint - keeps video colors natural but text still readable */
+    z-index: 1;
+}
+
+/* Lightweight solid-color hero (used on pages where the video isn't needed, e.g. Shop page) */
+.hero-section-solid {
+    background: linear-gradient(135deg, var(--farm-green-dark), var(--farm-green));
+    color: #fff;
+    padding: 60px 0;
+    text-align: center;
+}
+
+
+/* Product card */
+.product-card {
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    transition: transform .2s ease, box-shadow .2s ease;
+    height: 100%;
+}
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+.product-card img {
+    height: 190px;
+    object-fit: cover;
+    width: 100%;
+    background: #eee;
+}
+.price-tag {
+    color: var(--farm-green-dark);
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+/* Sidebars */
+.farmer-sidebar .list-group-item.active {
+    background-color: var(--farm-green);
+    border-color: var(--farm-green);
+}
+.farmer-sidebar {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Stat cards */
+.stat-card {
+    border-radius: 14px;
+    border: none;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.stat-card.bg-green { background: linear-gradient(135deg, #43a047, #1b5e20); }
+.stat-card.bg-gold  { background: linear-gradient(135deg, #fbc02d, #f57f17); }
+.stat-card.bg-blue  { background: linear-gradient(135deg, #1e88e5, #0d47a1); }
+.stat-card.bg-red   { background: linear-gradient(135deg, #e53935, #b71c1c); }
+
+.auth-card {
+    max-width: 480px;
+    margin: 50px auto;
+    border-radius: 16px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+    border: none;
+}
+
+.btn-farm {
+    background-color: var(--farm-green);
+    color: #fff;
+    border: none;
+}
+.btn-farm:hover {
+    background-color: var(--farm-green-dark);
+    color: #fff;
+}
+
+table.table thead {
+    background-color: var(--farm-green);
+    color: #fff;
+}

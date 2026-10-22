@@ -1,0 +1,8 @@
+{
+    "name": "farmlink/backend-api",
+    "description": "FarmLink PHP JSON API — adds Firebase Admin SDK for server-side ID token verification (OTP + email link auth).",
+    "require": {
+        "php": ">=8.1",
+        "kreait/firebase-php": "^7.0"
+    }
+}

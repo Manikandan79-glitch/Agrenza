@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+farmlink-nextjs/node_modules/
+
+# Next.js build output
+.next/
+farmlink-nextjs/.next/
+farmlink-nextjs/out/
+
+# Environment variables
+.env*.local
+*.env.local
+
+# Secrets & Service Accounts
+farmlink/backend/config/firebase-service-account.json
+**/firebase-service-account.json
+
+# Logs
+*.log
+farmlink/backend/logs/*.txt
+
+# System files
+.DS_Store
+Thumbs.db

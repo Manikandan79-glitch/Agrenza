@@ -1,0 +1,13 @@
+@echo off
+cd /d "%~dp0farmlink-nextjs"
+echo [1/3] Closing any lingering node processes...
+taskkill /F /IM node.exe >nul 2>&1
+echo [2/3] Cleaning corrupted node_modules...
+if exist "node_modules" rd /s /q "node_modules"
+if exist "package-lock.json" del /f /q "package-lock.json"
+echo [3/3] Installing dependencies (this may take a minute)...
+call npm install
+echo.
+echo Starting FarmLink Next.js server...
+call npm run dev
+pause
