@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost/farmlink/farmlink/backend/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://agrenza.onrender.com/farmlink/backend/api";
 
 export class ApiError extends Error {}
 

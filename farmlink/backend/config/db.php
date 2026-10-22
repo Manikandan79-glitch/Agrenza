@@ -15,8 +15,14 @@ define('DB_PASS', $dbPass);
 define('DB_NAME', $dbName);
 define('DB_PORT', $dbPort);
 
-// Uploaded product images URL
-define('UPLOAD_URL', getenv('UPLOAD_URL') ?: 'http://localhost/farmlink/farmlink/uploads/');
+// Uploaded product images URL (dynamic for local and cloud)
+$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$dynamicUploadUrl = (strpos($host, 'localhost') !== false)
+    ? 'http://localhost/farmlink/farmlink/uploads/'
+    : ($isHttps ? 'https://' : 'http://') . $host . '/farmlink/uploads/';
+
+define('UPLOAD_URL', getenv('UPLOAD_URL') ?: $dynamicUploadUrl);
 define('UPLOAD_DIR', __DIR__ . '/../../uploads/');
 
 $conn = mysqli_init();
@@ -40,9 +46,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
-        'secure' => false,
+        'secure' => $isHttps,
         'httponly' => true,
-        'samesite' => 'Lax',
+        'samesite' => $isHttps ? 'None' : 'Lax',
     ]);
     session_start();
 }
