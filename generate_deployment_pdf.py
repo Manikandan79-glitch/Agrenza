@@ -4,7 +4,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether, HRFlowable
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether, HRFlowable, Image
 )
 from reportlab.pdfgen import canvas
 
@@ -34,7 +34,7 @@ class NumberedCanvas(canvas.Canvas):
         self.setFillColor(colors.HexColor("#4b5563"))
         
         # Running Header
-        self.drawString(40, 805, "AGRENZA — Farm-to-Doorstep Marketplace | Cloud Deployment Guide")
+        self.drawString(40, 805, "AGRENZA — Farm-to-Doorstep Marketplace | Cloud Deployment & Workflow Guide")
         self.setStrokeColor(colors.HexColor("#d1d5db"))
         self.setLineWidth(0.5)
         self.line(40, 798, 555, 798)
@@ -103,11 +103,11 @@ def build_pdf(filename):
         'Header1',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=15,
-        leading=19,
+        fontSize=14,
+        leading=18,
         textColor=c_primary,
-        spaceBefore=14,
-        spaceAfter=6,
+        spaceBefore=12,
+        spaceAfter=5,
         keepWithNext=True
     )
 
@@ -115,10 +115,10 @@ def build_pdf(filename):
         'Header2',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=11.5,
-        leading=15,
+        fontSize=10.5,
+        leading=14,
         textColor=c_secondary,
-        spaceBefore=10,
+        spaceBefore=8,
         spaceAfter=4,
         keepWithNext=True
     )
@@ -127,18 +127,18 @@ def build_pdf(filename):
         'BodyDark',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=9,
-        leading=13.5,
+        fontSize=8.8,
+        leading=13,
         textColor=c_dark,
-        spaceAfter=6
+        spaceAfter=5
     )
 
     bullet_style = ParagraphStyle(
         'BulletItem',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=8.8,
-        leading=13,
+        fontSize=8.5,
+        leading=12.5,
         textColor=c_dark,
         leftIndent=14,
         spaceAfter=3
@@ -151,6 +151,17 @@ def build_pdf(filename):
         fontSize=8.5,
         leading=12.5,
         textColor=c_primary,
+    )
+
+    caption_style = ParagraphStyle(
+        'CaptionText',
+        parent=styles['Normal'],
+        fontName='Helvetica-Oblique',
+        fontSize=8,
+        leading=11,
+        textColor=colors.HexColor("#64748b"),
+        alignment=1, # Center
+        spaceAfter=8,
     )
 
     code_style = ParagraphStyle(
@@ -183,12 +194,12 @@ def build_pdf(filename):
     story = []
 
     # ==================== COVER PAGE ====================
-    story.append(Spacer(1, 40))
+    story.append(Spacer(1, 35))
     story.append(Paragraph("PROJECT AGRENZA (FARMLINK)", subtitle_style))
     story.append(Spacer(1, 8))
-    story.append(Paragraph("Complete Cloud Deployment Guide & Architectural Reference", title_style))
+    story.append(Paragraph("Complete Cloud Deployment Guide & Workflow Architecture", title_style))
     story.append(Spacer(1, 10))
-    story.append(HRFlowable(width="60%", thickness=2.5, color=c_gold, spaceAfter=20, spaceBefore=10))
+    story.append(HRFlowable(width="60%", thickness=2.5, color=c_gold, spaceAfter=18, spaceBefore=10))
     
     meta_text = """
     <b>Candidate:</b> MANIKANDAN M (Register No: 23083070500112001)<br/>
@@ -198,7 +209,7 @@ def build_pdf(filename):
     <b>Publication Date:</b> October 2026 | Production Build Version 1.0.0
     """
     story.append(Paragraph(meta_text, meta_style))
-    story.append(Spacer(1, 30))
+    story.append(Spacer(1, 25))
 
     # Architecture Overview Summary Box on Cover
     summary_html = """
@@ -206,7 +217,7 @@ def build_pdf(filename):
     • <b>Global Edge Frontend:</b> Next.js 14 App Router on Vercel CDN (<i>https://agrenza.vercel.app</i>)<br/>
     • <b>Containerized Backend:</b> Apache PHP 8.2 REST API on Render.com (<i>https://agrenza.onrender.com</i>)<br/>
     • <b>Distributed Database:</b> TiDB Cloud Serverless MySQL 8.0 Wire-Compatible Cluster<br/>
-    • <b>Authentication & Mailer:</b> Dual SSL Gmail SMTP on Port 465 & Firebase Auth Infrastructure<br/>
+    • <b>Authentication & Mailer:</b> Dual SSL Gmail SMTP on Port 465 & HTTPS Mail Relay on Vercel<br/>
     • <b>Source Control & CI/CD:</b> GitHub Auto-Deployment Pipeline (<i>Manikandan79-glitch/Agrenza</i>)
     """
     summary_table = Table(
@@ -216,14 +227,14 @@ def build_pdf(filename):
     summary_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), c_accent_bg),
         ('BOX', (0,0), (-1,-1), 1.2, c_secondary),
-        ('TOPPADDING', (0,0), (-1,-1), 12),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 12),
-        ('LEFTPADDING', (0,0), (-1,-1), 16),
-        ('RIGHTPADDING', (0,0), (-1,-1), 16),
+        ('TOPPADDING', (0,0), (-1,-1), 10),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+        ('LEFTPADDING', (0,0), (-1,-1), 14),
+        ('RIGHTPADDING', (0,0), (-1,-1), 14),
     ]))
     story.append(summary_table)
 
-    story.append(Spacer(1, 35))
+    story.append(Spacer(1, 25))
 
     # Quick Reference Table
     ref_data = [
@@ -232,15 +243,15 @@ def build_pdf(filename):
         [Paragraph("Backend REST API", table_cell), Paragraph("PHP 8.2 + Apache Docker", table_cell), Paragraph("Render.com", table_cell), Paragraph("https://agrenza.onrender.com", table_cell)],
         [Paragraph("Relational DB", table_cell), Paragraph("MySQL 8.0 Protocol", table_cell), Paragraph("TiDB Cloud", table_cell), Paragraph("gateway01.ap-northeast-1.prod.aws.tidbcloud.com:4000", table_cell)],
         [Paragraph("Code Repository", table_cell), Paragraph("Git Version Control", table_cell), Paragraph("GitHub", table_cell), Paragraph("github.com/Manikandan79-glitch/Agrenza", table_cell)],
-        [Paragraph("Transactional Mail", table_cell), Paragraph("SMTP SSL Port 465", table_cell), Paragraph("Google Gmail", table_cell), Paragraph("smtp.gmail.com (ravananm913@gmail.com)", table_cell)],
+        [Paragraph("Transactional Mail", table_cell), Paragraph("SMTP SSL 465 / HTTPS Relay", table_cell), Paragraph("Google Gmail", table_cell), Paragraph("smtp.gmail.com (ravananm913@gmail.com)", table_cell)],
     ]
     t_ref = Table(ref_data, colWidths=[95, 115, 75, 230])
     t_ref.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), c_primary),
         ('ALIGN', (0,0), (-1,-1), 'LEFT'),
         ('GRID', (0,0), (-1,-1), 0.5, c_border),
-        ('TOPPADDING', (0,0), (-1,-1), 5),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('TOPPADDING', (0,0), (-1,-1), 4),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
         ('LEFTPADDING', (0,0), (-1,-1), 6),
         ('RIGHTPADDING', (0,0), (-1,-1), 6),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, c_light_bg]),
@@ -249,28 +260,31 @@ def build_pdf(filename):
 
     story.append(PageBreak())
 
-    # ==================== SECTION 1 ====================
-    story.append(Paragraph("1. Executive Summary & Multi-Tier Architecture", h1_style))
+    # ==================== SECTION 1 & SYSTEM ARCHITECTURE DIAGRAM ====================
+    story.append(Paragraph("1. Executive Architecture & Multi-Tier Cloud Workflow", h1_style))
     story.append(Paragraph(
-        "Agrenza (formerly FarmLink) is a farm-to-doorstep direct agricultural marketplace application. "
-        "The system replaces exploitative agricultural intermediaries with a transparent, direct transaction pipeline. "
-        "To ensure continuous availability, high performance, and zero hosting costs during academic presentation, "
-        "the application adopts an enterprise-grade <b>Decoupled Headless Multi-Tier Cloud Architecture</b>.",
+        "Agrenza adopts an enterprise-grade <b>Decoupled Headless Multi-Tier Cloud Architecture</b>. "
+        "The diagram below illustrates the complete production communication flow across all tiers:",
         body_style
     ))
     
-    story.append(Paragraph("Key Architectural Advantages:", h2_style))
-    story.append(Paragraph("• <b>Headless Decoupling:</b> The user-facing presentation tier runs independently of the backend API, allowing edge-optimized caching and instant mobile page delivery.", bullet_style))
-    story.append(Paragraph("• <b>Unified Relational State:</b> A centralized serverless MySQL instance guarantees real-time inventory consistency, farmer payouts, and order synchronization.", bullet_style))
-    story.append(Paragraph("• <b>Continuous Integration / Continuous Delivery (CI/CD):</b> Every git push to GitHub automatically triggers automated builds on both Vercel and Render.", bullet_style))
-    story.append(Paragraph("• <b>Cost Efficiency:</b> Implemented utilizing 100% free-tier cloud resources without sacrificing SSL encryption, multi-region routing, or database scalability.", bullet_style))
+    arch_img_path = r"c:\wamp64\www\farmlink\diagram_cloud_architecture.png"
+    if os.path.exists(arch_img_path):
+        story.append(Image(arch_img_path, width=515, height=283))
+        story.append(Paragraph("Figure 1.1: Production Cloud Architecture & Real-Time Data Flow", caption_style))
 
-    story.append(Spacer(1, 10))
+    story.append(Paragraph("Key Architectural Advantages:", h2_style))
+    story.append(Paragraph("• <b>Headless Decoupling:</b> Frontend (Next.js 14) and Backend (PHP 8.2) scale independently with zero server affinity.", bullet_style))
+    story.append(Paragraph("• <b>Serverless Cloud Database:</b> TiDB Cloud MySQL provides instant autoscaling, daily automated snapshots, and strict TLS encryption.", bullet_style))
+    story.append(Paragraph("• <b>HTTPS Mail Relay:</b> Bypasses cloud SMTP port blocks (ports 25, 465, 587) via Vercel-hosted serverless email relay for 100% reliable mobile registration.", bullet_style))
+    story.append(Paragraph("• <b>Zero-Cost Academic Infrastructure:</b> 100% free-tier deployment adhering to university evaluation standards.", bullet_style))
+
+    story.append(PageBreak())
 
     # ==================== SECTION 2: DATABASE TIER ====================
     story.append(Paragraph("2. Tier 1: Cloud MySQL Database (TiDB Cloud Serverless)", h1_style))
     story.append(Paragraph(
-        "Relational data persistence was migrated from a local WAMP MySQL 8.4 engine to <b>TiDB Cloud Serverless</b>, "
+        "Relational data persistence was migrated from a local WAMP MySQL engine to <b>TiDB Cloud Serverless</b>, "
         "an enterprise-grade distributed SQL database supporting native MySQL 8.0 wire compatibility and SSL/TLS encryption.",
         body_style
     ))
@@ -296,7 +310,7 @@ def build_pdf(filename):
     ]))
     story.append(t_db)
 
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 8))
     story.append(Paragraph("The Seven Core Tables in the Schema:", h2_style))
     
     tables_desc = [
@@ -313,108 +327,62 @@ def build_pdf(filename):
     t_schemas.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), c_primary),
         ('GRID', (0,0), (-1,-1), 0.5, c_border),
-        ('TOPPADDING', (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('TOPPADDING', (0,0), (-1,-1), 3),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
         ('LEFTPADDING', (0,0), (-1,-1), 5),
         ('RIGHTPADDING', (0,0), (-1,-1), 5),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, c_light_bg]),
     ]))
     story.append(t_schemas)
 
-    story.append(Spacer(1, 10))
-    story.append(Paragraph("Database Migration & Import Procedure:", h2_style))
-    story.append(Paragraph(
-        "1. Local database was exported using <code>mysqldump -u root --default-character-set=utf8mb4 farmlink</code>.<br/>"
-        "2. The cloud database catalog <code>farmlink</code> was provisioned via MySQL CLI.<br/>"
-        "3. The complete SQL dump (including DDL statements, constraints, and seed data) was executed directly over SSL.<br/>"
-        "4. Live integrity checks confirmed all 7 tables and 10 production product records active in cloud.",
-        body_style
-    ))
-
     story.append(PageBreak())
 
-    # ==================== SECTION 3: BACKEND API ====================
-    story.append(Paragraph("3. Tier 2: Backend REST API on Render.com", h1_style))
+    # ==================== SECTION 3: BACKEND API & REGISTRATION WORKFLOW ====================
+    story.append(Paragraph("3. Tier 2: Backend REST API & Authentication Workflow", h1_style))
     story.append(Paragraph(
-        "The PHP API backend was packaged into an immutable Docker container and deployed to <b>Render.com Web Services</b>. "
-        "The container executes on a Debian Linux base with Apache 2.4 and PHP 8.2.",
+        "The PHP API backend is packaged as an immutable Docker container deployed on <b>Render.com Web Services</b>. "
+        "The workflow diagram below details the 6-step registration and email verification process:",
         body_style
     ))
 
-    story.append(Paragraph("Production Dockerfile Specification:", h2_style))
-    docker_snippet = """
-    FROM php:8.2-apache
-    RUN docker-php-ext-install mysqli pdo pdo_mysql
-    RUN a2enmod headers rewrite
-    COPY farmlink/ /var/www/html/farmlink/
-    WORKDIR /var/www/html/farmlink
-    EXPOSE 80
-    """
-    docker_table = Table([[Paragraph(docker_snippet.strip().replace("\n", "<br/>&nbsp;&nbsp;"), code_style)]], colWidths=[515])
-    docker_table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), c_code_bg),
-        ('BOX', (0,0), (-1,-1), 1, c_border),
-        ('TOPPADDING', (0,0), (-1,-1), 8),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
-        ('LEFTPADDING', (0,0), (-1,-1), 12),
-        ('RIGHTPADDING', (0,0), (-1,-1), 12),
-    ]))
-    story.append(docker_table)
+    reg_img_path = r"c:\wamp64\www\farmlink\diagram_registration_workflow.png"
+    if os.path.exists(reg_img_path):
+        story.append(Image(reg_img_path, width=515, height=216))
+        story.append(Paragraph("Figure 3.1: User Registration, OTP Generation & Email Verification Workflow", caption_style))
 
-    story.append(Spacer(1, 10))
     story.append(Paragraph("Critical Architectural Fixes Applied in Backend:", h2_style))
-    story.append(Paragraph("• <b>Cloud SSL Driver Integration:</b> Updated <code>farmlink/backend/config/db.php</code> with <code>mysqli_init()</code> and <code>mysqli_ssl_set()</code> to allow secure handshakes with TiDB Cloud on port 4000.", bullet_style))
-    story.append(Paragraph("• <b>Cross-Origin Resource Sharing (CORS):</b> Enhanced <code>_bootstrap.php</code> to detect request origins and issue dynamic <code>Access-Control-Allow-Origin: https://agrenza.vercel.app</code> headers with <code>Access-Control-Allow-Credentials: true</code>.", bullet_style))
-    story.append(Paragraph("• <b>Cross-Domain Session Cookies:</b> Configured PHP session cookies with <code>SameSite=None; Secure</code> to ensure authentication tokens persist between Vercel and Render.", bullet_style))
-    story.append(Paragraph("• <b>Dynamic Image Asset URL:</b> Implemented dynamic hostname and protocol resolution in <code>UPLOAD_URL</code> so product images render correctly across both localhost and <code>agrenza.onrender.com</code>.", bullet_style))
-
-    story.append(Spacer(1, 10))
-    story.append(Paragraph("Verified Live API Endpoints:", h2_style))
-    
-    api_endpoints = [
-        [Paragraph("Endpoint URL", table_header), Paragraph("HTTP Method", table_header), Paragraph("Payload / Output", table_header), Paragraph("Status", table_header)],
-        [Paragraph("/farmlink/backend/api/products/list.php", table_cell), Paragraph("GET", table_cell), Paragraph("JSON array of approved products with GST calculations", table_cell), Paragraph("200 OK", table_cell)],
-        [Paragraph("/farmlink/backend/api/auth/login.php", table_cell), Paragraph("POST", table_cell), Paragraph("Body: { role, email, password } -> Session Cookie", table_cell), Paragraph("200 OK", table_cell)],
-        [Paragraph("/farmlink/backend/api/auth/register.php", table_cell), Paragraph("POST", table_cell), Paragraph("Body: { role, name, mobile, email } -> Sends Gmail OTP", table_cell), Paragraph("200 OK", table_cell)],
-        [Paragraph("/farmlink/backend/api/admin/farmers.php", table_cell), Paragraph("GET", table_cell), Paragraph("Admin query returning all approved & pending farmers", table_cell), Paragraph("200 OK", table_cell)],
-        [Paragraph("/farmlink/backend/api/admin/buyers.php", table_cell), Paragraph("GET", table_cell), Paragraph("Dedicated endpoint returning customer details and spending", table_cell), Paragraph("200 OK", table_cell)],
-    ]
-    t_api = Table(api_endpoints, colWidths=[175, 55, 225, 60])
-    t_api.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), c_secondary),
-        ('GRID', (0,0), (-1,-1), 0.5, c_border),
-        ('TOPPADDING', (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-        ('LEFTPADDING', (0,0), (-1,-1), 5),
-        ('RIGHTPADDING', (0,0), (-1,-1), 5),
-        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, c_light_bg]),
-    ]))
-    story.append(t_api)
+    story.append(Paragraph("• <b>Cloud SSL Driver Integration:</b> <code>db.php</code> utilizes <code>mysqli_init()</code> and <code>mysqli_ssl_set()</code> to mandate TLS on port 4000.", bullet_style))
+    story.append(Paragraph("• <b>CORS Configuration:</b> <code>_bootstrap.php</code> matches origin against <code>*.vercel.app</code> and responds with credentials support.", bullet_style))
+    story.append(Paragraph("• <b>Dual Mail Dispatch Architecture:</b> Dispatches emails via Vercel HTTPS Relay (bypassing Render cloud port blocks) with direct Gmail SMTP port 465 fallback.", bullet_style))
+    story.append(Paragraph("• <b>Dynamic Domain Resolution:</b> Email verification links automatically generate with <code>https://agrenza.vercel.app</code> when accessed on mobile.", bullet_style))
 
     story.append(PageBreak())
 
-    # ==================== SECTION 4: FRONTEND TIER ====================
-    story.append(Paragraph("4. Tier 3: Frontend Deployment on Vercel Edge Network", h1_style))
+    # ==================== SECTION 4: FRONTEND TIER & ORDER WORKFLOW ====================
+    story.append(Paragraph("4. Tier 3: Frontend Deployment & Hyperlocal Order Workflow", h1_style))
     story.append(Paragraph(
         "The Next.js 14 client application is deployed onto <b>Vercel's Global Edge Network</b>. "
-        "The build process compiles React Server Components, client interactivity bundles, and dynamic routes into static assets and Edge Serverless functions.",
+        "The workflow diagram below illustrates the order placement and inventory deduction pipeline:",
         body_style
     ))
 
+    ord_img_path = r"c:\wamp64\www\farmlink\diagram_order_workflow.png"
+    if os.path.exists(ord_img_path):
+        story.append(Image(ord_img_path, width=515, height=216))
+        story.append(Paragraph("Figure 4.1: Order Placement, Hyperlocal Verification & Fulfillment Workflow", caption_style))
+
     story.append(Paragraph("Deployment Configuration Steps:", h2_style))
-    story.append(Paragraph("1. <b>GitHub Import:</b> Connected repository <code>Manikandan79-glitch/Agrenza</code> to Vercel via authorized GitHub App integration.", bullet_style))
-    story.append(Paragraph("2. <b>Root Directory Alignment:</b> Explicitly configured the project Root Directory to <code>farmlink-nextjs</code> (since the repository contains both frontend and backend subdirectories).", bullet_style))
-    story.append(Paragraph("3. <b>Build Pre-Verification:</b> Resolved strict TypeScript compilation constraints in <code>bulk-request/page.tsx</code> ensuring zero type-check errors during <code>npx tsc --noEmit</code>.", bullet_style))
-    story.append(Paragraph("4. <b>API Base URL Routing:</b> Configured <code>app/lib/api.ts</code> with production fallback pointing directly to <code>https://agrenza.onrender.com/farmlink/backend/api</code>.", bullet_style))
-    story.append(Paragraph("5. <b>Automatic CI/CD Pipeline:</b> Every commit pushed to the <code>main</code> branch immediately initiates an automatic Vercel production build.", bullet_style))
+    story.append(Paragraph("1. <b>GitHub Import:</b> Connected repository <code>Manikandan79-glitch/Agrenza</code> to Vercel with automatic CI/CD triggers on push.", bullet_style))
+    story.append(Paragraph("2. <b>Root Directory Alignment:</b> Explicitly configured the project Root Directory to <code>farmlink-nextjs</code>.", bullet_style))
+    story.append(Paragraph("3. <b>Build Pre-Verification:</b> Resolved strict TypeScript compilation constraints in <code>bulk-request/page.tsx</code> ensuring zero type errors.", bullet_style))
+    story.append(Paragraph("4. <b>Hyperlocal Delivery Enforcement:</b> Checkout validates delivery addresses strictly to Kanyakumari district pincodes <b>629001</b> and <b>629401</b>.", bullet_style))
 
-    story.append(Spacer(1, 10))
+    story.append(PageBreak())
 
-    # ==================== SECTION 5: NEW FEATURES & ADMIN PORTAL ====================
-    story.append(Paragraph("5. Live Features & Mobile Verification Guide", h1_style))
+    # ==================== SECTION 5: LIVE FEATURES & ADMIN PORTAL ====================
+    story.append(Paragraph("5. Live Production Features & Testing Guide", h1_style))
     story.append(Paragraph(
-        "The application has been verified for complete mobile and desktop responsiveness. "
-        "All features interact with the live cloud database over HTTPS.",
+        "All features have been tested on both mobile smartphones and desktop browsers interacting with the live cloud database over HTTPS.",
         body_style
     ))
 
@@ -440,14 +408,14 @@ def build_pdf(filename):
     story.append(t_feat)
 
     story.append(Spacer(1, 10))
-    story.append(Paragraph("Mobile Testing Credentials:", h2_style))
+    story.append(Paragraph("Live Production Credentials for Mobile Viva Demonstration:", h2_style))
     story.append(Paragraph("• <b>Super Administrator:</b> URL: <code>https://agrenza.vercel.app/admin/admin-login</code> | User: <code>admin@farmlink.com</code> | Password: <code>admin123</code>", bullet_style))
     story.append(Paragraph("• <b>Farmer Portal:</b> User: <code>sathishm250406@gmail.com</code> | Password: <code>FdXxs#43</code> | Access: <code>/farmer/dashboard</code>", bullet_style))
-    story.append(Paragraph("• <b>Buyer Portal:</b> Self-register at <code>/auth/buyer-register</code> to test real-time Gmail OTP dispatch directly to your smartphone.", bullet_style))
+    story.append(Paragraph("• <b>Buyer Self-Registration:</b> Visit <code>/auth/buyer-register</code> on mobile to verify instant Gmail OTP delivery and auto-generated login credentials.", bullet_style))
 
-    story.append(Spacer(1, 10))
+    story.append(PageBreak())
 
-    # ==================== SECTION 6: VIVA QUESTIONS & ANSWERS ====================
+    # ==================== SECTION 6: VIVA QUESTIONS & DECLARATION ====================
     story.append(Paragraph("6. Frequently Asked Viva Questions & Model Answers", h1_style))
     
     viva_q1 = """<b>Q1: Why did you decouple Next.js and PHP into separate cloud hosts instead of using a single server?</b><br/>
@@ -460,12 +428,17 @@ def build_pdf(filename):
     story.append(Paragraph(viva_q2, body_style))
     story.append(Spacer(1, 4))
 
-    viva_q3 = """<b>Q3: How does the system guarantee database security when connecting to TiDB Cloud over the public internet?</b><br/>
-    <b>Answer:</b> Plaintext database traffic is strictly forbidden. The connection invokes <code>mysqli_ssl_set()</code> with the <code>MYSQLI_CLIENT_SSL</code> flag, enforcing TLS 1.3 encryption for all SQL queries and result sets in transit between Render.com and the AWS Tokyo cluster gateway."""
+    viva_q3 = """<b>Q3: How does the system handle email delivery in cloud environments where SMTP ports are blocked?</b><br/>
+    <b>Answer:</b> Render's free tier blocks outbound ports 25, 465, and 587. To solve this, Agrenza implements a dual-mode dispatch architecture: the PHP backend calls a secure HTTPS relay endpoint hosted on Vercel Serverless (<code>/api/send-mail</code>) over port 443 (which is never blocked), which then delivers the email using Google's SMTP servers over TLS."""
     story.append(Paragraph(viva_q3, body_style))
+    story.append(Spacer(1, 4))
+
+    viva_q4 = """<b>Q4: How does the system guarantee database security when connecting to TiDB Cloud over the public internet?</b><br/>
+    <b>Answer:</b> Plaintext database traffic is strictly forbidden. The connection invokes <code>mysqli_ssl_set()</code> with the <code>MYSQLI_CLIENT_SSL</code> flag, enforcing TLS 1.3 encryption for all SQL queries and result sets in transit between Render.com and the AWS Tokyo cluster gateway."""
+    story.append(Paragraph(viva_q4, body_style))
 
     story.append(Spacer(1, 15))
-    story.append(HRFlowable(width="100%", thickness=1, color=c_gold, spaceAfter=15, spaceBefore=5))
+    story.append(HRFlowable(width="100%", thickness=1, color=c_gold, spaceAfter=12, spaceBefore=5))
 
     footer_note = """
     <b>DECLARATION:</b> This documentation reflects the true production architecture of the Agrenza Agricultural Marketplace system as implemented for the BCA degree evaluation at Government Arts and Science College, Palkulam. All services are currently live and verifiable via any web browser.

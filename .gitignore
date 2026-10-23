@@ -22,3 +22,5 @@ farmlink/backend/logs/*.txt
 # System files
 .DS_Store
 Thumbs.db
+*.sql
+

@@ -2,14 +2,89 @@
 /**
  * Agrenza — Gmail SMTP & Notification Mailer
  * -----------------------------------------------------------------
- * Sends real notification emails using Gmail SMTP over SSL (port 465).
+ * Sends real notification emails using:
+ * 1. HTTPS Mail Relay (Next.js /api/send-mail on Vercel) — Bypasses cloud port blocks (Render blocks 25, 465, 587)
+ * 2. Direct Gmail SMTP over SSL (port 465) fallback for local WAMP
  * Configuration is loaded from backend/config/mail-config.php.
  */
 
 require_once __DIR__ . '/../config/mail-config.php';
 
 /**
- * Sends an HTML email via SMTP or writes to dev log if not yet configured.
+ * Returns the correct base frontend URL for email verification and action links.
+ * Automatically chooses live Vercel domain when on production/mobile, or localhost during dev.
+ */
+function get_frontend_base_url(): string {
+    if (!empty($_SERVER['HTTP_ORIGIN']) && preg_match('/\.vercel\.app$/', parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST) ?? '')) {
+        return rtrim($_SERVER['HTTP_ORIGIN'], '/');
+    }
+    if ((!empty($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'render.com') !== false) || getenv('RENDER')) {
+        return 'https://agrenza.vercel.app';
+    }
+    return 'https://agrenza.vercel.app'; // Default to live Vercel frontend so mobile emails always work
+}
+
+/**
+ * Dispatches email via Vercel HTTPS Mail Relay.
+ * Works seamlessly on Render free tier where outbound raw SMTP ports are blocked.
+ */
+function send_mail_via_https_relay(string $toEmail, string $toName, string $subject, string $htmlBody, array $attachments = []): bool {
+    $relayUrl = 'https://agrenza.vercel.app/api/send-mail';
+    $payload = json_encode([
+        'to' => $toEmail,
+        'subject' => $subject,
+        'html' => $htmlBody,
+        'attachments' => $attachments,
+        'secret' => 'agrenza_secret_mail_relay_2026',
+    ]);
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init($relayUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'User-Agent: Agrenza-Backend/1.0',
+        ]);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 12);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($httpCode === 200 && $response) {
+            $json = json_decode($response, true);
+            if (!empty($json['ok'])) {
+                return true;
+            }
+        }
+        error_log("[Agrenza mailer] HTTPS Relay failed (HTTP $httpCode): " . ($curlError ?: $response));
+    } else {
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'POST',
+                'header' => "Content-Type: application/json\r\nUser-Agent: Agrenza-Backend/1.0\r\n",
+                'content' => $payload,
+                'timeout' => 12,
+            ],
+        ]);
+        $response = @file_get_contents($relayUrl, false, $context);
+        if ($response) {
+            $json = json_decode($response, true);
+            if (!empty($json['ok'])) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Sends an HTML email via HTTPS Relay or direct SMTP.
  * Supports optional attachments: array of ['name' => 'filename.ext', 'type' => 'text/plain', 'content' => '...']
  * Returns true if dispatched, false otherwise.
  */
@@ -17,12 +92,19 @@ function send_mail(string $toEmail, string $toName, string $subject, string $htm
     $toEmail = trim($toEmail);
     if ($toEmail === '') return false;
 
+    // 1. Try Vercel HTTPS Mail Relay first (Works on Render and live cloud)
+    if (send_mail_via_https_relay($toEmail, $toName, $subject, $htmlBody, $attachments)) {
+        log_mail_locally($toEmail, $subject, $htmlBody, 'SENT_VIA_HTTPS_RELAY', $attachments);
+        return true;
+    }
+
+    // 2. Direct SMTP Fallback (for environments with open port 465, like local WAMP)
     $isConfigured = (SMTP_USER !== 'youraddress@gmail.com' && SMTP_PASS !== 'xxxxxxxxxxxxxxxx');
 
     if ($isConfigured) {
-        $conn = @fsockopen('ssl://' . SMTP_HOST, SMTP_PORT, $errno, $errstr, 10);
+        $conn = @fsockopen('ssl://' . SMTP_HOST, SMTP_PORT, $errno, $errstr, 6);
         if ($conn) {
-            stream_set_timeout($conn, 10);
+            stream_set_timeout($conn, 6);
 
             $readResponse = function () use ($conn) {
                 $data = '';
@@ -111,13 +193,13 @@ function send_mail(string $toEmail, string $toName, string $subject, string $htm
         }
     }
 
-    // Fallback for local development if SMTP not yet configured or failed:
-    log_mail_locally($toEmail, $subject, $htmlBody, $isConfigured ? 'SMTP_FAILED_LOGGED_LOCALLY' : 'DEV_MODE_LOGGED_LOCALLY', $attachments);
+    // Fallback log
+    log_mail_locally($toEmail, $subject, $htmlBody, 'MAIL_FAILED_LOGGED_LOCALLY', $attachments);
     return false;
 }
 
 /**
- * Logs email content to local dev log file for easy testing when offline or without SMTP.
+ * Logs email content to local dev log file for easy testing when offline.
  */
 function log_mail_locally(string $toEmail, string $subject, string $htmlBody, string $status, array $attachments = []): void {
     $logDir = dirname(DEV_MAIL_LOG);
@@ -180,7 +262,8 @@ function mail_template(string $title, string $bodyHtml): string {
  */
 function send_buyer_verification_mail(string $email, string $name, string $autoPassword, string $token, string $otpCode): bool {
     $subject = 'Verify your Agrenza account — Login password attached 🔐';
-    $verifyUrl = "http://localhost:3000/auth/email-verify?token=" . urlencode($token) . "&email=" . urlencode($email);
+    $frontend = get_frontend_base_url();
+    $verifyUrl = "{$frontend}/auth/email-verify?token=" . urlencode($token) . "&email=" . urlencode($email);
 
     $bodyHtml = <<<HTML
     <p>Hi <strong>{$name}</strong>,</p>
@@ -249,7 +332,8 @@ TXT;
  */
 function send_farmer_verification_mail(string $email, string $name, string $password, string $token, string $otpCode): bool {
     $subject = 'Verify your Agrenza Farmer Registration — Login password attached 🌾';
-    $verifyUrl = "http://localhost:3000/auth/email-verify?token=" . urlencode($token) . "&email=" . urlencode($email);
+    $frontend = get_frontend_base_url();
+    $verifyUrl = "{$frontend}/auth/email-verify?token=" . urlencode($token) . "&email=" . urlencode($email);
 
     $bodyHtml = <<<HTML
     <p>Hi <strong>{$name}</strong>,</p>
@@ -324,6 +408,7 @@ function send_farmer_decision_notifications(array $farmer, string $action, strin
     $farmerName = $farmer['name'] ?? 'Farmer';
     $farmerMobile = $farmer['mobile'] ?? '';
     $isApproved = ($action === 'approve');
+    $frontend = get_frontend_base_url();
 
     // 1. Email to Farmer
     if ($farmerEmail !== '') {
@@ -336,7 +421,7 @@ function send_farmer_decision_notifications(array $farmer, string $action, strin
             </p>
             <p>You can now log in to your Farmer Dashboard to list your fresh harvest, manage stock, and sell directly to buyers at fair market rates.</p>
             <div style="text-align: center; margin: 24px 0;">
-                <a href="http://localhost:3000/auth/login" style="background: #16a34a; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 999px; font-weight: 600; font-size: 15px; display: inline-block;">
+                <a href="{$frontend}/auth/login" style="background: #16a34a; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 999px; font-weight: 600; font-size: 15px; display: inline-block;">
                     Log In to Farmer Portal
                 </a>
             </div>
